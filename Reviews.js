@@ -3,7 +3,7 @@ var Schema = mongoose.Schema;
 
 mongoose.connect(process.env.DB);
 
-//Movie schema
+//Review schema
 var ReviewSchema = new Schema({
     username: { type: String, required: true },
     movietitle: { type: String, required: true },
@@ -13,4 +13,4 @@ var ReviewSchema = new Schema({
 
 
 //return the model
-module.exports = mongoose.model('Review', ReviewSchema);
+module.exports = mongoose.model('Reviews', ReviewSchema);
