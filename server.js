@@ -11,31 +11,28 @@ var dotenv = require('dotenv').config();
 var async = require('async');
 const crypto = require("crypto");
 var rp = require('request-promise');
-//var cors = require('cors'); //connect to assignment 5 frontend
 
 const GA_TRACKING_ID = process.env.GA_KEY;
 
-//create server app
+//create application
 var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
-//app.use(cors());
 
-//create router
+//initialize router
 var router = express.Router();
 
-//route middleware that will happen on every request
 router.use(function(req, res, next) {
-    //log each request to the console
     console.log(req.method, req.url);
-
-    //continue doing what we were doing and go to the route
     next();
 });
 
-//-----------------------------server routes-----------------------------
+//===============================================================================================
+// routes
+//===============================================================================================
+// /postjwt route
 router.route('/postjwt')
     .post(authJwtController.isAuthenticated, function (req, res) {
             console.log(req.body);
