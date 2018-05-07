@@ -335,7 +335,7 @@ router.route('/reviews')
         Review.findByIdAndRemove(req.body._id,function (err, reviews) {
             if (err) res.send(err);
 
-            res.json({ message: 'Review for ' + req.body.movietitle + 'deleted!'});
+            res.json({ message: 'Review deleted!'});
         });
     });
 
