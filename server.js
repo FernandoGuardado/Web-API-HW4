@@ -282,6 +282,9 @@ router.route('/reviews')
 
         Movie.findOne({ title: movietitle }, function (err, movie) {
             if (err) res.send(err);
+            if(!req.body.movietitle){
+                res.json({message: 'Review did not contain a movie name! You need to input the name of the movie you want to review!'})
+            }
             if (!movie) {
                 res.json({ success: false, msg: req.body.movietitle +  ' does not exist. Please select a movie that exists in the database to submit a review.' })
             }
@@ -303,9 +306,6 @@ router.route('/reviews')
                 }
                 else if(req.body.rating <= 0){
                     res.json({message: 'Review rating too low! Rating needs to be between 1 & 5!'})
-                }
-                else if(!req.body.movietitle){
-                    res.json({message: 'Review did not contain a movie name! You need to input the name of the movie you want to review!'})
                 }
                 else if(!req.body.review){
                     res.json({message: 'You forgot to write a review!'})
