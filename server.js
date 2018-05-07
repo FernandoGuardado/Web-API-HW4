@@ -173,14 +173,14 @@ router.route('/movies')
                 else res.send(result);
             });
         } else {
-            //just get all movies
-            console.log("Getting movies without reviews")
+            //movies without reviews
             Movie.find(function (err, movies) {
-                //if error, send error
+                
                 if (err) res.send(err);
-                //return movies
+                
+                // return movies
                 res.json(movies);
-            });
+                });
         }
     })
 
