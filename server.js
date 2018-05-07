@@ -1,4 +1,4 @@
- //load packages
+//load packages
 var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
@@ -11,6 +11,7 @@ var dotenv = require('dotenv').config();
 var async = require('async');
 const crypto = require("crypto");
 var rp = require('request-promise');
+var cors = require('cors'); //connect to assignment 5 frontend
 
 const GA_TRACKING_ID = process.env.GA_KEY;
 
