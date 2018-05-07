@@ -295,14 +295,26 @@ router.route('/reviews')
                 newReview.movietitle = req.body.movietitle;
                 newReview.review = req.body.review;
                 newReview.rating = req.body.rating;
-                if(req.body.rating <= 5){
+                if(!req.body.rating){
+                    res.json({message: 'You forgot the rating! Please submit a review between 1 & 5!'})
+                }
+                else if(req.body.rating > 5){
+                    res.json({message: 'Review rating too high! Rating needs to be between 1 & 5!'})
+                }
+                else if(req.body.rating <= 0){
+                    res.json({message: 'Review rating too low! Rating needs to be between 1 & 5!'})
+                }
+                else if(!req.body.movietitle){
+                    res.json({message: 'Review did not contain a movie name! You need to input the name of the movie you want to review!'})
+                }
+                else if(!req.body.review){
+                    res.json({message: 'You forgot to write a review!'})
+                }
+                else{
                     newReview.save(function(err) {
                         if (err) res.send(err);
                         res.json({ message: 'Review submitted for ' + req.body.movietitle + '!' })
                     });
-                }
-                else if(req.body.rating > 5){
-                    res.json({message: 'Review rating too high! Rating needs to be between 1-5!'})
                 }
 
             }
