@@ -295,11 +295,15 @@ router.route('/reviews')
                 newReview.movietitle = req.body.movietitle;
                 newReview.review = req.body.review;
                 newReview.rating = req.body.rating;
-
-                newReview.save(function(err) {
-                    if (err) res.send(err);
-                    res.json({ message: 'Review submitted for ' + req.body.movietitle + '!' })
-                });
+                if(req.body.rating <= 5){
+                    newReview.save(function(err) {
+                        if (err) res.send(err);
+                        res.json({ message: 'Review submitted for ' + req.body.movietitle + '!' })
+                    });
+                }
+                else{
+                    res.json({message: 'Review rating too high! Rating needs to be between 1-5!'})
+                }
             }
         });
     })
