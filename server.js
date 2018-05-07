@@ -283,7 +283,7 @@ router.route('/reviews')
         Movie.findOne({ title: movietitle }, function (err, movie) {
             if (err) res.send(err);
             if (!movie) {
-                res.json({ success: false, msg: req.body.movietitle +  ' does not exist. Please select a movie that exists in the database to register a review.' })
+                res.json({ success: false, msg: req.body.movietitle +  ' does not exist. Please select a movie that exists in the database to submit a review.' })
             }
             else {
                 var authorizationToken = req.headers.authorization.split(' ')[1];
