@@ -1,7 +1,7 @@
 {
-  "name": "webapi-assignment4",
+  "name": "Web-API-HW4",
   "version": "1.0.0",
-  "description": "movie db and reviews with mongodb",
+  "description": "mongo database connected to MLab w/ reviews",
   "main": "server.js",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
@@ -22,6 +22,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "Erik Fong",
+  "author": "Fernando Guardado",
   "license": "ISC"
 }
