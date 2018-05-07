@@ -284,7 +284,7 @@ router.route('/reviews')
 
                 newReview.save(function(err) {
                     if (err) res.send(err);
-                    res.json({ message: 'Review submitted!' })
+                    res.json({ message: 'Review submitted for ' + req.body.movietitle + '!' })
                 });
             }
         });
