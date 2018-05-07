@@ -11,6 +11,7 @@ var dotenv = require('dotenv').config();
 var async = require('async');
 const crypto = require("crypto");
 var rp = require('request-promise');
+var port = process.env.PORT || 8080;
 
 const GA_TRACKING_ID = process.env.GA_KEY;
 
@@ -70,55 +71,55 @@ router.route('/users')
 //===============================================================================================
 // /signup route
 router.post('/signup', function(req, res) {
-    if (!req.body.username || !req.body.password) {
-    res.json({success: false, msg: 'Please pass username and password.'});
-    }
-    else {
-    var user = new User();
-    user.name = req.body.name;
-    user.username = req.body.username;
-    user.password = req.body.password;
+            if (!req.body.username || !req.body.password) {
+            res.json({success: false, msg: 'Please pass username and password.'});
+            }
+            else {
+            var user = new User();
+            user.name = req.body.name;
+            user.username = req.body.username;
+            user.password = req.body.password;
 
-    // save
-    user.save(function(err) {
-              if (err) {
-              // duplicate entry
-              if (err.code == 11000)
-              return res.json({ success: false, message: 'A user with that username already exists.'});
-              else
-              return res.send(err);
-              }
-              res.json({ message: 'User created! Welcome ' + req.body.name + '!' });
-              });
-    }
-    });
+            // save
+            user.save(function(err) {
+                      if (err) {
+                      // duplicate entry
+                      if (err.code == 11000)
+                      return res.json({ success: false, message: 'A user with that username already exists.'});
+                      else
+                      return res.send(err);
+                      }
+                      res.json({ message: 'User created! Welcome ' + req.body.name + '!' });
+                      });
+            }
+            });
 //===============================================================================================
 // /signin route
 router.post('/signin', function(req, res) {
-var userNew = new User();
-userNew.name = req.body.name;
-userNew.username = req.body.username;
-userNew.password = req.body.password;
+    var userNew = new User();
+    userNew.name = req.body.name;
+    userNew.username = req.body.username;
+    userNew.password = req.body.password;
 
-User.findOne({ username: userNew.username }).select('name username password').exec(function(err, user) {
-if (err) res.send(err);
+    User.findOne({ username: userNew.username }).select('name username password').exec(function(err, user) {
+        if (err) res.send(err);
 
-user.comparePassword(userNew.password, function(isMatch){
-    if (isMatch) {
-        var userToken = {id: user._id, username: user.username};
-        var token = jwt.sign(userToken, process.env.SECRET_KEY);
-        res.json({success: true, token: 'JWT ' + token});
-    }
-    else {
-        res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
-    }
+        user.comparePassword(userNew.password, function(isMatch){
+            if (isMatch) {
+                var userToken = {id: user._id, username: user.username};
+                var token = jwt.sign(userToken, process.env.SECRET_KEY);
+                res.json({success: true, token: 'JWT ' + token});
+            }
+            else {
+                res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
+            }
+        });
+
+
+    });
 });
-
-
-});
-});
-//-----------------------------movies CRUD-----------------------------
-
+//===============================================================================================
+// /movies route
 router.route('/movies/:movieId')
     //get single movie
     .get(authJwtController.isAuthenticated, function (req, res) {
@@ -183,78 +184,95 @@ router.route('/movies')
         }
     })
 
-    //create a new movie
-    .post(authJwtController.isAuthenticated, function (req, res) {
-        console.log("Saving a movie...");
-        if (!req.body.title
-            || !req.body.year
-            || !req.body.genre
-            || !req.body.actors
-        ) {
-            res.json({ success: false, message: 'Movie information is incorrect. Please include title, year, genre and actors.' });
-        }
-        else {
-            //create new movie object
-            var movie = new Movie(req.body);
+    // create a new movie
+.post(authJwtController.isAuthenticated, function (req, res) {
+    if (!req.body.title) {
+      res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing the title.' });
+    }
+    else if(!req.body.year){
+      res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing the year.' });
+    }else if(!req.body.genre){
+      res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing the genre.' });
+    }else if(!req.body.actors){
+      res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing at least one actor.' });
+    }
+    else if (req.body.actors.length <= 2) {
+    res.json({ success: false, message: 'Please add at atleast three actors to the movie.' })
+    }
+    else {
 
-            //save the movie object
-            movie.save(function(err) {
-                if (err) {
-                    //duplicate entry
-                    if (err.code === 11000)
-                        return res.json({ success: false, message: 'A movie with that title already exists.' });
-                    else
-                        return res.send(err);
-                }
-                res.json({ message: 'Movie created!' });
-            });
-        }
+    var movie = new Movie();
+    
+    // set inputs to movie data
+    movie.title = req.body.title;
+    movie.year = req.body.year;
+    movie.genre = req.body.genre;
+    movie.actors = req.body.actors;
+    
+    // save
+    movie.save(function(err) {
+               if (err) {
+               //d uplicate entry
+               if (err.code === 11000)
+               return res.json({ success: false, message: req.body.title + ' already exists in the database!' });
+               else
+               return res.send(err);
+               }
+               res.json({ message: req.body.title +  ' has been created & added to the database.' });
+               });
+    }
     })
 
-    //update a movie
-    .put(authJwtController.isAuthenticated, function (req, res) {
-        Movie.findById(req.body._id,function (err, movie) {
-            if (err) {
-                res.send(err);
-            }
-            else if (!req.body.title || !req.body.year || !req.body.genre || !req.body.actors) {
-                res.json({ success: false, message: 'Movie information is incorrect. Please include title, year, genre and actors.' });
-            }
-            else if (req.body.actors.length < 3)
-            {
-                res.json({ success: false, message: 'Please include at least three actors(actor name, character name).' });
-            }
-            else {
-                movie.title = req.body.title;
-                movie.year = req.body.year;
-                movie.genre = req.body.genre;
-                movie.actors = req.body.actors;
-                movie.imageUrl = req.body.imageUrl;
-
-                movie.save(function(err) {
-                    if (err) {
-                        // duplicate entry
-                        if (err.code === 11000)
-                            return res.json({ success: false, message: 'A movie with that title already exists.' });
-                        else
-                            return res.send(err);
-                    }
-                    res.json({ message: 'Movie Updated!' });
-                });
-            }
-        });
+// update a movie
+.put(authJwtController.isAuthenticated, function (req, res) {
+    Movie.findById(req.body._id,function (err, movie) {
+                   if (err) {
+                   res.send(err);
+                   }
+                   else if (!req.body.title) {
+                       res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing the title.' });
+                     }
+                   else if(!req.body.year){
+                       res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing the year.' });
+                   }else if(!req.body.genre){
+                       res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing the genre.' });
+                   }else if(!req.body.actors){
+                       res.json({ success: false, message: 'You have entered the movie information incorrectly. You where missing at least one actor.' });
+                   }
+                   else if (req.body.actors.length <= 2)
+                   {
+                   res.json({ success: false, message: 'Please add at atleast three actors to the movie.' });
+                   }
+                   else {
+                   movie.title = req.body.title;
+                   movie.year = req.body.year;
+                   movie.genre = req.body.genre;
+                   movie.actors = req.body.actors;
+                   
+                   movie.save(function(err) {
+                              if (err) {
+                              // duplicate entry
+                              if (err.code === 11000)
+                              return res.json({ success: false, message: req.body.title + ' already exists in the database!' });
+                              else
+                              return res.send(err);
+                              }
+                              res.json({ message: req.body.title +  ' has been updated!' });
+                              });
+                   }
+                   });
     })
-
-    //delete a movie
-    .delete(authJwtController.isAuthenticated, function (req, res) {
-        Movie.findByIdAndRemove(req.body._id,function (err, movie) {
-            if (err) res.send(err);
-
-            res.json({ message: 'Movie Deleted!' });
+// delete a movie
+.delete(authJwtController.isAuthenticated, function (req, res) {
+    Movie.findByIdAndRemove(req.body._id,function (err, movie) {
+        if (err) res.send(err);
+                            
+        res.json({ message: req.body.title + ' has been deleted from the database!'});
         });
     });
 
-//-----------------------------reviews CRUD-----------------------------
+//===============================================================================================
+// /reviews route
 router.route('/reviews')
     //create review
     .post(authJwtController.isAuthenticated, function (req, res) {
@@ -265,13 +283,9 @@ router.route('/reviews')
         Movie.findOne({ title: movietitle }, function (err, movie) {
             if (err) res.send(err);
             if (!movie) {
-                res.json({ success: false, msg: 'No movie found.' })
+                res.json({ success: false, msg: req.body.movietitle +  ' does not exist. Please select a movie that exists in the database to register a review.' })
             }
             else {
-                //added to replace jwt decode
-                // var username = req.username;
-
-                //decode jwt authorization for username
                 var authorizationToken = req.headers.authorization.split(' ')[1];
                 var decoded = jwt.decode(authorizationToken, process.env.SECRET_KEY);
 
@@ -304,19 +318,9 @@ router.route('/reviews')
         Review.findByIdAndRemove(req.body._id,function (err, reviews) {
             if (err) res.send(err);
 
-            res.json({ message: 'Review Deleted!' });
+            res.json({ message: 'Review for ' + req.body.movietitle + 'deleted!'});
         });
     });
 
-router.route('/test')
-    .get(function (req, res) {
-        // Event value must be numeric.
-        trackDimension('Feedback', 'Rating', 'Feedback for Movie', '3', 'Guardian\'s of the Galaxy', '1')
-            .then(function (response) {
-                console.log(response.body);
-                res.status(200).send('Event tracked.').end();
-            })
-    });
-
 app.use('/', router);
-app.listen(process.env.PORT || 8080);
+app.listen(port);
