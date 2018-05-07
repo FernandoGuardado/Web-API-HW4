@@ -11,7 +11,7 @@ var dotenv = require('dotenv').config();
 var async = require('async');
 const crypto = require("crypto");
 var rp = require('request-promise');
-//var cors = require('cors'); //connect to assignment 5 frontend
+var cors = require('cors'); //connect to assignment 5 frontend
 
 const GA_TRACKING_ID = process.env.GA_KEY;
 
@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
-//app.use(cors());
+app.use(cors());
 
 //create router
 var router = express.Router();
