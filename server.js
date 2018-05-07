@@ -301,9 +301,10 @@ router.route('/reviews')
                         res.json({ message: 'Review submitted for ' + req.body.movietitle + '!' })
                     });
                 }
-                else{
+                else if(req.body.rating > 5){
                     res.json({message: 'Review rating too high! Rating needs to be between 1-5!'})
                 }
+
             }
         });
     })
