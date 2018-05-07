@@ -11,7 +11,6 @@ var dotenv = require('dotenv').config();
 var async = require('async');
 const crypto = require("crypto");
 var rp = require('request-promise');
-var cors = require('cors'); //connect to assignment 5 frontend
 
 const GA_TRACKING_ID = process.env.GA_KEY;
 
@@ -152,36 +151,14 @@ router.route('/movies/:movieId')
 router.route('/movies')
     //get movies
     .get(authJwtController.isAuthenticated, function (req, res) {
-        console.log("Getting all movies and reviews");
-        //get all movies and reviews
-        if (req.query.reviews === 'true') {
-            console.log("Getting all movies with reviews");
-            Movie.aggregate([
-                {
-                    $lookup: {
-                        from: "reviews",
-                        localField: "title",
-                        foreignField: "movietitle",
-                        as: 'reviews'
-                    }
-                }
-            ], function (err, result) {
-                if (err) {
-                    res.send(err);
-                }
-                else res.send(result);
-            });
-        } else {
-            //just get all movies
-            console.log("Getting movies without reviews")
-            Movie.find(function (err, movies) {
-                //if error, send error
-                if (err) res.send(err);
-                //return movies
-                res.json(movies);
-            });
-        }
-    })
+        Movie.find(function (err, movies) {
+                   
+                   if (err) res.send(err);
+                   
+                   // return movies
+                   res.json(movies);
+                   });
+        })
 
     //create a new movie
     .post(authJwtController.isAuthenticated, function (req, res) {
