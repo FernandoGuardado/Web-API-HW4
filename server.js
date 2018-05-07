@@ -44,8 +44,8 @@ router.route('/postjwt')
             res.send(req.body);
         }
     );
-
-//show user by id
+//===============================================================================================
+// /users/:userID route
 router.route('/users/:userId')
     .get(authJwtController.isAuthenticated, function (req, res) {
         var id = req.params.userId;
@@ -53,67 +53,70 @@ router.route('/users/:userId')
             if (err) res.send(err);
 
             var userJson = JSON.stringify(user);
-
-            //return that user
+            // return that user
             res.json(user);
         });
     });
-
-//get all users
+//===============================================================================================
+// /users route
 router.route('/users')
     .get(authJwtController.isAuthenticated, function (req, res) {
         User.find(function (err, users) {
             if (err) res.send(err);
-
-            //return the users
+            // return the users
             res.json(users);
         });
     });
-
-//-----------------------------signup and signin-----------------------------
+//===============================================================================================
+// /signup route
 router.post('/signup', function(req, res) {
-    if (!req.body.username || !req.body.password || !req.body.password) {
-        res.json({ success: false, message: 'Please pass name, username, and password.' });
+    if (!req.body.username || !req.body.password) {
+    res.json({success: false, msg: 'Please pass username and password.'});
     }
     else {
-        var user = new User(req.body);
+    var user = new User();
+    user.name = req.body.name;
+    user.username = req.body.username;
+    user.password = req.body.password;
 
-        // save the user
-        user.save(function(err) {
-            if (err) {
-                // duplicate entry
-                if (err.code === 11000)
-                    return res.status(401).send({ success: false, message: 'A user with that username already exists.' });
-                else
-                    return res.send(err);
-            }
+    // save
+    user.save(function(err) {
+              if (err) {
+              // duplicate entry
+              if (err.code == 11000)
+              return res.json({ success: false, message: 'A user with that username already exists.'});
+              else
+              return res.send(err);
+              }
+              res.json({ message: 'User created! Welcome ' + req.body.name + '!' });
+              });
+    }
+    });
+//===============================================================================================
+// /signin route
+router.post('/signin', function(req, res) {
+var userNew = new User();
+userNew.name = req.body.name;
+userNew.username = req.body.username;
+userNew.password = req.body.password;
 
-            res.json({ message: 'User created!' });
-        });
+User.findOne({ username: userNew.username }).select('name username password').exec(function(err, user) {
+if (err) res.send(err);
+
+user.comparePassword(userNew.password, function(isMatch){
+    if (isMatch) {
+        var userToken = {id: user._id, username: user.username};
+        var token = jwt.sign(userToken, process.env.SECRET_KEY);
+        res.json({success: true, token: 'JWT ' + token});
+    }
+    else {
+        res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
     }
 });
 
-router.post('/signin', function(req, res) {
-    var userNew = new User(req.body);
 
-    User.findOne({ username: userNew.username }).select('name username password').exec(function(err, user) {
-        if (err) res.send(err);
-
-        user.comparePassword(userNew.password, function(isMatch){
-            if (isMatch) {
-                var userToken = {id: user._id, username: user.username};
-                var token = jwt.sign(userToken, process.env.SECRET_KEY);
-                res.json({ success: true, token: 'JWT ' + token });
-            }
-            else {
-                res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
-            }
-        });
-
-
-    });
 });
-
+});
 //-----------------------------movies CRUD-----------------------------
 
 router.route('/movies/:movieId')
