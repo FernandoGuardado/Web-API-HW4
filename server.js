@@ -326,7 +326,6 @@ router.route('/reviews')
         Review.find(function (err, reviews) {
             if (err) res.send(err);
             //return the users
-            res.json()
             res.json(reviews);
         });
     })
